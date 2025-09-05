@@ -14,17 +14,24 @@ function NotePage() {
 
   const fetchNotes = async () => {
     try {
-      const res = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/notes`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-      setNotes(res.data);
+      const res = await axios.get("https://simplenote-6msa.onrender.com/api/notes", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      // Ensure we always store an array
+      const data = res.data;
+      if (Array.isArray(data)) {
+        setNotes(data);
+      } else if (Array.isArray(data.notes)) {
+        setNotes(data.notes);
+      } else {
+        setNotes([]);
+      }
     } catch (err) {
       console.error("Error fetching notes", err);
+      setNotes([]); // fallback
     }
   };
 
@@ -32,11 +39,14 @@ function NotePage() {
     setSearchQuery(query.toLowerCase());
   };
 
-  const filteredNotes = notes.filter(
-    (note) =>
-      note.title?.toLowerCase().includes(searchQuery) ||
-      note.content?.toLowerCase().includes(searchQuery)
-  );
+  // Ensure notes is always filtered safely
+  const filteredNotes = Array.isArray(notes)
+    ? notes.filter(
+        (note) =>
+          note.title?.toLowerCase().includes(searchQuery) ||
+          note.content?.toLowerCase().includes(searchQuery)
+      )
+    : [];
 
   return (
     <div className="flex flex-col h-screen">
@@ -51,24 +61,28 @@ function NotePage() {
             md:block ${isListOpen ? "block" : "hidden"} md:relative fixed inset-y-0 left-0 z-40`}
         >
           <h2 className="text-lg font-bold mb-4 text-white">My Notes</h2>
-          {filteredNotes.map((note) => (
-            <div
-              key={note._id}
-              onClick={() => {
-                setSelectedNote(note);
-                setIsListOpen(false); // close on mobile
-              }}
-              className={`p-2 rounded-lg mb-2 cursor-pointer ${
-                selectedNote?._id === note._id
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-800 text-gray-300"
-              }`}
-            >
-              {note.title?.length > 10
-                ? note.title.substring(0, 10) + "..."
-                : note.title || "Untitled"}
-            </div>
-          ))}
+          {filteredNotes.length > 0 ? (
+            filteredNotes.map((note) => (
+              <div
+                key={note._id}
+                onClick={() => {
+                  setSelectedNote(note);
+                  setIsListOpen(false); // close on mobile
+                }}
+                className={`p-2 rounded-lg mb-2 cursor-pointer ${
+                  selectedNote?._id === note._id
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-800 text-gray-300"
+                }`}
+              >
+                {note.title?.length > 10
+                  ? note.title.substring(0, 10) + "..."
+                  : note.title || "Untitled"}
+              </div>
+            ))
+          ) : (
+            <p className="text-gray-400">No notes found</p>
+          )}
         </div>
 
         {/* Note Content */}
@@ -76,7 +90,9 @@ function NotePage() {
           {selectedNote ? (
             <>
               <h2 className="text-2xl font-bold mb-4">{selectedNote.title}</h2>
-              <div className="whitespace-pre-wrap">{selectedNote.content}</div>
+              <div className="whitespace-pre-wrap">
+                {selectedNote.content}
+              </div>
             </>
           ) : (
             <p className="text-gray-400">Select a note to view</p>
