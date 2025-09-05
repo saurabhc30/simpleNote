@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import PageNavbar from "./PageNavbar";
 import Login from "./Components/Login";
-import { TrashIcon } from "@heroicons/react/24/solid";
+import { TrashIcon, Bars3Icon, XMarkIcon } from "@heroicons/react/24/solid";
 
 const NotesPage = () => {
   const [notes, setNotes] = useState([]);
@@ -10,8 +10,9 @@ const NotesPage = () => {
   const [selectedNoteIndex, setSelectedNoteIndex] = useState(null);
   const [editingNoteIndex, setEditingNoteIndex] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // ✅ toggle sidebar on mobile
 
-  // ✅ Load notes on login
+  // Load notes on login
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -20,13 +21,13 @@ const NotesPage = () => {
     }
   }, []);
 
-  // ✅ Fetch all notes
   const fetchNotes = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get("https://simplenote-6msa.onrender.com/api/notes", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axios.get(
+        "https://simplenote-6msa.onrender.com/api/notes",
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       setNotes(response.data);
       setFilteredNotes(response.data);
     } catch (error) {
@@ -34,7 +35,6 @@ const NotesPage = () => {
     }
   };
 
-  // ✅ Create a new note
   const handleAddNewNoteClick = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -54,7 +54,6 @@ const NotesPage = () => {
     }
   };
 
-  // ✅ Auto-save updates
   const handleNoteChange = async (index, key, value) => {
     const updatedNotes = [...notes];
     updatedNotes[index][key] = value;
@@ -72,13 +71,13 @@ const NotesPage = () => {
     }
   };
 
-  // ✅ Delete note
   const handleDeleteNote = async (index) => {
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`https://simplenote-6msa.onrender.com/api/notes/${notes[index]._id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axios.delete(
+        `https://simplenote-6msa.onrender.com/api/notes/${notes[index]._id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       const updatedNotes = notes.filter((_, i) => i !== index);
       setNotes(updatedNotes);
       setFilteredNotes(updatedNotes);
@@ -89,7 +88,6 @@ const NotesPage = () => {
     }
   };
 
-  // ✅ Search notes
   const handleSearch = (query) => {
     const filtered = notes.filter(
       (note) =>
@@ -110,15 +108,28 @@ const NotesPage = () => {
       {isAuthenticated ? (
         <>
           <PageNavbar onSearch={handleSearch} onLogout={handleLogout} />
+
           <div className="flex h-screen" style={{ backgroundColor: "#1f2123" }}>
             {/* Sidebar */}
-            <div className="w-1/4 bg-gray-900 border-r border-gray-700 p-4 flex flex-col">
-              <button
-                className="mb-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
-                onClick={handleAddNewNoteClick}
-              >
-                + New Note
-              </button>
+            <div
+              className={`fixed md:static top-0 left-0 h-full w-64 bg-gray-900 border-r border-gray-700 p-4 flex flex-col transform transition-transform duration-300 z-40
+              ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
+            >
+              <div className="flex justify-between items-center mb-4">
+                <button
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+                  onClick={handleAddNewNoteClick}
+                >
+                  + New Note
+                </button>
+                {/* Close on mobile */}
+                <button
+                  className="md:hidden text-white"
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  <XMarkIcon className="w-6 h-6" />
+                </button>
+              </div>
               <ul className="flex-1 overflow-y-auto">
                 {filteredNotes.map((note, index) => (
                   <li
@@ -131,9 +142,15 @@ const NotesPage = () => {
                     onClick={() => {
                       setSelectedNoteIndex(index);
                       setEditingNoteIndex(index);
+                      setSidebarOpen(false); // auto close sidebar on mobile
                     }}
                   >
-                    <span className="truncate">{note.title}</span>
+                    {/* Show only 10 characters */}
+                    <span>
+                      {note.title.length > 10
+                        ? note.title.substring(0, 10) + "..."
+                        : note.title}
+                    </span>
                     <TrashIcon
                       className="w-5 h-5 text-red-400 hover:text-red-600 cursor-pointer"
                       onClick={(e) => {
@@ -147,9 +164,17 @@ const NotesPage = () => {
             </div>
 
             {/* Note Editor */}
-            <div className="flex-1 p-6 text-white overflow-y-auto">
+            <div className="flex-1 p-6 text-white relative">
+              {/* Toggle button for mobile */}
+              <button
+                className="absolute top-4 left-4 md:hidden text-white"
+                onClick={() => setSidebarOpen(true)}
+              >
+                <Bars3Icon className="w-6 h-6" />
+              </button>
+
               {editingNoteIndex !== null ? (
-                <div>
+                <div className="h-full flex flex-col">
                   <input
                     type="text"
                     className="w-full mb-4 p-2 rounded-lg bg-gray-800 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -160,7 +185,7 @@ const NotesPage = () => {
                     }
                   />
                   <textarea
-                    className="w-full h-[70vh] p-3 rounded-lg bg-gray-800 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 p-3 rounded-lg bg-gray-800 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none overflow-y-auto"
                     placeholder="Write your note here..."
                     value={filteredNotes[editingNoteIndex]?.content || ""}
                     onChange={(e) =>
