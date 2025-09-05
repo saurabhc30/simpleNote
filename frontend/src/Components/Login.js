@@ -11,7 +11,7 @@ const Login = ({ setAuthenticated }) => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:8000/api/users/login", {
+      const response = await axios.post("https://simplenote-6msa.onrender.com/api/users/login", {
         username,
         password,
       });

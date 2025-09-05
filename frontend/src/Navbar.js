@@ -41,8 +41,8 @@ export default function Navbar() {
             <Link to="/contact" className="hover:underline">Contact Us</Link>
             <Link to="/help" className="hover:underline">Help</Link>
             <Link to="/blog" className="hover:underline">Blog</Link>
-            <Link to="http://localhost:8000/api/users/Login" className="hover:underline">Log In</Link>
-            <Link to="http://localhost:8000/api/users/signup">
+            <Link to="https://simplenote-6msa.onrender.com/api/users/Login" className="hover:underline">Log In</Link>
+            <Link to="https://simplenote-6msa.onrender.com/api/users/signup">
               <button className="bg-blue-600 px-4 py-2 rounded-lg">Sign Up</button>
             </Link>
           </div>

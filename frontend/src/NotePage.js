@@ -24,7 +24,7 @@ const NotesPage = () => {
   const fetchNotes = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get("http://localhost:8000/api/notes", {
+      const response = await axios.get("https://simplenote-6msa.onrender.com/api/notes", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setNotes(response.data);
@@ -39,7 +39,7 @@ const NotesPage = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
-        "http://localhost:8000/api/notes",
+        "https://simplenote-6msa.onrender.com/api/notes",
         { title: "Untitled", content: "" },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -63,7 +63,7 @@ const NotesPage = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.put(
-        `http://localhost:8000/api/notes/${updatedNotes[index]._id}`,
+        `https://simplenote-6msa.onrender.com/api/notes/${updatedNotes[index]._id}`,
         updatedNotes[index],
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -76,7 +76,7 @@ const NotesPage = () => {
   const handleDeleteNote = async (index) => {
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:8000/api/notes/${notes[index]._id}`, {
+      await axios.delete(`https://simplenote-6msa.onrender.com/api/notes/${notes[index]._id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const updatedNotes = notes.filter((_, i) => i !== index);

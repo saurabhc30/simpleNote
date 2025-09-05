@@ -14,7 +14,7 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("/api/users/register", {
+      const response = await axios.post("https://simplenote-6msa.onrender.com/api/users/register", {
         firstName,
         lastName,
         email,
